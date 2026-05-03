@@ -10,7 +10,7 @@ impl Flags {
     ///
     /// See <https://github.com/xioTechnologies/Fusion> for details.
     pub fn initialising(&self) -> bool {
-        self.inner.initialising
+        self.inner.startup
     }
 
     /// Angular rate recovery flag.

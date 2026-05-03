@@ -30,7 +30,7 @@ fn main() {
         .files(&[
             fusion_path.join("FusionAhrs.c"),
             fusion_path.join("FusionCompass.c"),
-            fusion_path.join("FusionOffset.c"),
+            fusion_path.join("FusionBias.c"),
             out_path.join("extern.c"),
         ])
         .compile("fusion");

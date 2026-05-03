@@ -4,7 +4,7 @@ use fusion_imu_sys as sys;
 #[allow(missing_docs)]
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 #[repr(C)]
 pub struct Vector {
     pub x: f32,
@@ -42,7 +42,7 @@ impl From<Vector> for sys::FusionVector {
 #[allow(missing_docs)]
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 #[repr(C)]
 pub struct Quaternion {
     pub w: f32,
@@ -84,7 +84,7 @@ impl From<Quaternion> for sys::FusionQuaternion {
 #[allow(missing_docs)]
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 #[repr(C)]
 pub struct Matrix {
     pub xx: f32,
@@ -119,9 +119,9 @@ impl From<Matrix> for sys::FusionMatrix {
     fn from(value: Matrix) -> Self {
         sys::FusionMatrix {
             array: [
-                [value.xx, value.xy, value.xz],
-                [value.yx, value.yy, value.yz],
-                [value.zx, value.zy, value.zz],
+                value.xx, value.xy, value.xz,
+                value.yx, value.yy, value.yz,
+                value.zx, value.zy, value.zz,
             ],
         }
     }
@@ -134,7 +134,7 @@ impl From<Matrix> for sys::FusionMatrix {
 #[allow(missing_docs)]
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 #[repr(C)]
 pub struct Euler {
     pub roll: f32,
@@ -167,9 +167,9 @@ impl From<Euler> for sys::FusionEuler {
 #[repr(C)]
 pub enum Convention {
     #[default]
-    NorthWestUp,
-    EastNorthUp,
-    NorthWestDown,
+    NorthWestUp = sys::FusionConvention_FusionConventionNwu as _, 
+    EastNorthUp = sys::FusionConvention_FusionConventionEnu as _,
+    NorthEastDown = sys::FusionConvention_FusionConventionNed as _,
 }
 
 #[cfg(test)]
@@ -333,7 +333,7 @@ mod tests {
     #[test]
     fn matrix_maps_from_sys_array() {
         let sys_matrix = sys::FusionMatrix {
-            array: [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]],
+            array: [1.0, 2.0, 3.0, 4.0, 5.0, 6.0,7.0, 8.0, 9.0],
         };
 
         // Act
@@ -408,7 +408,7 @@ mod tests {
         let sys_matrix = sys::FusionMatrix::from(matrix);
 
         let values = unsafe { sys_matrix.array };
-        assert_eq!(values, [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]);
+        assert_eq!(values, [1.0, 2.0, 3.0,4.0, 5.0, 6.0,7.0, 8.0, 9.0]);
     }
 
     #[test]

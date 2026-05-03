@@ -37,7 +37,7 @@ impl FusionAhrs {
     /// algorithm while maintaining the current settings.
     pub fn reset(&mut self) {
         unsafe {
-            sys::FusionAhrsReset(&mut self.inner as *mut sys::FusionAhrs);
+            sys::FusionAhrsRestart(&mut self.inner as *mut sys::FusionAhrs);
         }
     }
 
