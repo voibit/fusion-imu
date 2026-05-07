@@ -1,6 +1,6 @@
 use core::mem::MaybeUninit;
 use fusion_imu_sys as sys;
-use crate::Vector;
+use crate::Vector3;
 
 /// Gyroscope offset algorithm structure.
 pub struct FusionOffset {
@@ -29,7 +29,7 @@ impl FusionOffset {
 
     /// Updates the gyroscope offset algorithm and returns the corrected
     /// gyroscope measurement. Values are in degrees per second.
-    pub fn update(&mut self, gyroscope: Vector) -> Vector {
+    pub fn update(&mut self, gyroscope: Vector3) -> Vector3 {
         unsafe {
             sys::FusionBiasUpdate(&mut self.inner as *mut sys::FusionBias, gyroscope.into())
                 .into()

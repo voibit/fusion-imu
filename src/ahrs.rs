@@ -2,7 +2,7 @@ use core::mem::MaybeUninit;
 
 use fusion_imu_sys as sys;
 
-use crate::math::{Quaternion, Vector};
+use crate::math::{Quaternion, Vector3};
 use crate::settings::Settings;
 use crate::{Flags, InternalStates};
 
@@ -51,9 +51,9 @@ impl FusionAhrs {
     /// - `delta_time`: Delta time in seconds.
     pub fn update(
         &mut self,
-        gyroscope: Vector,
-        accelerometer: Vector,
-        magnetometer: Vector,
+        gyroscope: Vector3,
+        accelerometer: Vector3,
+        magnetometer: Vector3,
         delta_time: f32,
     ) {
         unsafe {
@@ -76,8 +76,8 @@ impl FusionAhrs {
     /// - `delta_time`: Delta time in seconds.
     pub fn update_no_magnetometer(
         &mut self,
-        gyroscope: Vector,
-        accelerometer: Vector,
+        gyroscope: Vector3,
+        accelerometer: Vector3,
         delta_time: f32,
     ) {
         unsafe {
@@ -100,8 +100,8 @@ impl FusionAhrs {
     /// - `delta_time`: Delta time in seconds.
     pub fn update_external_heading(
         &mut self,
-        gyroscope: Vector,
-        accelerometer: Vector,
+        gyroscope: Vector3,
+        accelerometer: Vector3,
         heading: f32,
         delta_time: f32,
     ) {
@@ -141,7 +141,7 @@ impl FusionAhrs {
 
     /// Returns the linear acceleration measurement equal to the accelerometer
     /// measurement with the 1g of gravity removed.
-    pub fn get_linear_acceleration(&self) -> Vector {
+    pub fn get_linear_acceleration(&self) -> Vector3 {
         unsafe {
             sys::FusionAhrsGetLinearAcceleration(&self.inner as *const sys::FusionAhrs).into()
         }
@@ -150,7 +150,7 @@ impl FusionAhrs {
     /// Returns the Earth acceleration measurement equal to the accelerometer
     /// measurement in the Earth coordinate frame with the 1g of gravity
     /// removed.
-    pub fn get_earth_acceleration(&self) -> Vector {
+    pub fn get_earth_acceleration(&self) -> Vector3 {
         unsafe { sys::FusionAhrsGetEarthAcceleration(&self.inner as *const sys::FusionAhrs).into() }
     }
 

@@ -1,39 +1,44 @@
 use fusion_imu_sys as sys;
 
+
 /// 3D vector.
 #[allow(missing_docs)]
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
-#[repr(C)]
-pub struct Vector {
-    pub x: f32,
-    pub y: f32,
-    pub z: f32,
-}
+pub struct Vector3([f32;3]);
 
-impl Vector {
-    /// Create a new `Vector`.
-    pub fn new(x: f32, y: f32, z: f32) -> Self {
-        Self { x, y, z }
+
+/// 3x3 matrix in row-major order.
+/// #[allow(missing_docs)]
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+pub struct Matrix3([f32;9]);
+ 
+
+impl From<[f32;3]> for Vector3 {
+    fn from(value: [f32;3]) -> Self {
+        Self(value)
     }
 }
 
-impl From<sys::FusionVector> for Vector {
+impl From<&[f32;3]> for Vector3 {
+    fn from(value: &[f32;3]) -> Self {
+        Self(*value)
+    }
+}
+
+impl From<sys::FusionVector> for Vector3 {
     fn from(value: sys::FusionVector) -> Self {
-        let values: sys::FusionVector__bindgen_ty_1 = unsafe { value.axis };
-        Self {
-            x: values.x,
-            y: values.y,
-            z: values.z,
-        }
+        Self(unsafe{value.array})
     }
 }
 
-impl From<Vector> for sys::FusionVector {
-    fn from(value: Vector) -> Self {
+impl From<Vector3> for sys::FusionVector {
+    fn from(value: Vector3) -> Self {
         sys::FusionVector {
-            array: [value.x, value.y, value.z],
+            array: value.0,
         }
     }
 }
@@ -78,51 +83,16 @@ impl From<Quaternion> for sys::FusionQuaternion {
     }
 }
 
-/// 3x3 matrix in row-major order.
-///
-/// See <http://en.wikipedia.org/wiki/Row-major_order>
-#[allow(missing_docs)]
-#[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[cfg_attr(feature = "defmt", derive(defmt::Format))]
-#[repr(C)]
-pub struct Matrix {
-    pub xx: f32,
-    pub xy: f32,
-    pub xz: f32,
-    pub yx: f32,
-    pub yy: f32,
-    pub yz: f32,
-    pub zx: f32,
-    pub zy: f32,
-    pub zz: f32,
-}
-
-impl From<sys::FusionMatrix> for Matrix {
+impl From<sys::FusionMatrix> for Matrix3 {
     fn from(value: sys::FusionMatrix) -> Self {
-        let values: sys::FusionMatrix__bindgen_ty_1 = unsafe { value.element };
-        Self {
-            xx: values.xx,
-            xy: values.xy,
-            xz: values.xz,
-            yx: values.yx,
-            yy: values.yy,
-            yz: values.yz,
-            zx: values.zx,
-            zy: values.zy,
-            zz: values.zz,
-        }
+        Self(unsafe{value.array })
     }
 }
 
-impl From<Matrix> for sys::FusionMatrix {
-    fn from(value: Matrix) -> Self {
+impl From<Matrix3> for sys::FusionMatrix {
+    fn from(value: Matrix3) -> Self {
         sys::FusionMatrix {
-            array: [
-                value.xx, value.xy, value.xz,
-                value.yx, value.yy, value.yz,
-                value.zx, value.zy, value.zz,
-            ],
+            array: value.0
         }
     }
 }
@@ -183,15 +153,11 @@ mod tests {
         };
 
         // Act
-        let vector = Vector::from(sys_vector);
+        let vector = Vector3::from(sys_vector);
 
         assert_eq!(
             vector,
-            Vector {
-                x: 1.0,
-                y: 2.0,
-                z: 3.0,
-            }
+            Vector3([1.0,2.0,3.0])
         );
     }
 
@@ -206,25 +172,17 @@ mod tests {
         };
 
         // Act
-        let vector = Vector::from(sys_vector);
+        let vector = Vector3::from(sys_vector);
 
         assert_eq!(
             vector,
-            Vector {
-                x: 1.0,
-                y: 2.0,
-                z: 3.0,
-            }
+            Vector3([1.0,2.0,3.0])
         );
     }
 
     #[test]
     fn vector_maps_to_sys_array() {
-        let vector = Vector {
-            x: 1.0,
-            y: 2.0,
-            z: 3.0,
-        };
+        let vector = Vector3([1.0,2.0,3.0]);
 
         // Act
         let sys_vector = sys::FusionVector::from(vector);
@@ -235,11 +193,7 @@ mod tests {
 
     #[test]
     fn vector_maps_to_sys_axis() {
-        let vector = Vector {
-            x: 1.0,
-            y: 2.0,
-            z: 3.0,
-        };
+        let vector = Vector3([1.0,2.0,3.0]);
 
         // Act
         let sys_vector = sys::FusionVector::from(vector);
@@ -337,21 +291,11 @@ mod tests {
         };
 
         // Act
-        let matrix = Matrix::from(sys_matrix);
+        let matrix = Matrix3::from(sys_matrix);
 
         assert_eq!(
             matrix,
-            Matrix {
-                xx: 1.0,
-                xy: 2.0,
-                xz: 3.0,
-                yx: 4.0,
-                yy: 5.0,
-                yz: 6.0,
-                zx: 7.0,
-                zy: 8.0,
-                zz: 9.0,
-            }
+            Matrix3([1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0])
         );
     }
 
@@ -372,38 +316,17 @@ mod tests {
         };
 
         // Act
-        let matrix = Matrix::from(sys_matrix);
+        let matrix = Matrix3::from(sys_matrix);
 
         assert_eq!(
             matrix,
-            Matrix {
-                xx: 1.0,
-                xy: 2.0,
-                xz: 3.0,
-                yx: 4.0,
-                yy: 5.0,
-                yz: 6.0,
-                zx: 7.0,
-                zy: 8.0,
-                zz: 9.0,
-            }
+            Matrix3([1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0])
         );
     }
 
     #[test]
     fn matrix_maps_to_sys_array() {
-        let matrix = Matrix {
-            xx: 1.0,
-            xy: 2.0,
-            xz: 3.0,
-            yx: 4.0,
-            yy: 5.0,
-            yz: 6.0,
-            zx: 7.0,
-            zy: 8.0,
-            zz: 9.0,
-        };
-
+        let matrix = Matrix3([1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0]);
         // Act
         let sys_matrix = sys::FusionMatrix::from(matrix);
 
@@ -413,17 +336,7 @@ mod tests {
 
     #[test]
     fn matrix_maps_to_sys_element() {
-        let matrix = Matrix {
-            xx: 1.0,
-            xy: 2.0,
-            xz: 3.0,
-            yx: 4.0,
-            yy: 5.0,
-            yz: 6.0,
-            zx: 7.0,
-            zy: 8.0,
-            zz: 9.0,
-        };
+        let matrix = Matrix3 ([1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0]);
 
         // Act
         let sys_matrix = sys::FusionMatrix::from(matrix);
